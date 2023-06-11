@@ -1,6 +1,6 @@
 #-----------------------------------------------------------------------------
 
-FLAGS      = -Wall -O2
+FLAGS      = -Wall -O2 -fpermissive
 LIBS       = -lm -lncurses
 FILES = COPYING README makefile *.cc *.c *.h
 VERSION = Apr2006
