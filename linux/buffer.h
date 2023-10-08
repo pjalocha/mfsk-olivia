@@ -51,22 +51,22 @@ template <class Type, class PtrType>
      { Ptr+=Step; if(Ptr>=Len) Ptr-=Len; }
 
    // FIFO is full ?
-   int Full(void)
+   bool Full(void) const
      { PtrType Ptr=WritePtr; IncrPtr(Ptr);
 	   return (Ptr==ReadPtr); }
 
    // FIFO is empty ?
-   int Empty(void)
+   bool Empty(void) const
      { return (ReadPtr==WritePtr); }
 
    // how many elements we can write = space left in the FIFO
-   PtrType WriteReady(void)
+   PtrType WriteReady(void) const
      { int Ready=ReadPtr-WritePtr;
 	   if(Ready<=0) Ready+=Len;
 	   return Ready-1; }
 
    // how many elements we can read = space taken in the FIFO
-   PtrType ReadReady(void)
+   PtrType ReadReady(void) const
      { int Ready=WritePtr-ReadPtr;
 	   if(Ready<0) Ready+=Len;
 	   return Ready; }

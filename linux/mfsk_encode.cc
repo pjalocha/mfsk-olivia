@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   int16_t AudioBuffer[Transmitter.MaxOutputLen];
 
   printf("MFSK encoder by Pawel Jalocha, October 2023\n");
-  Parameters.Print();
+  Parameters.Print(1);
 
   printf("MFSK encodng %s into audio in %s\n", InputFileName, AudioFileName);
 

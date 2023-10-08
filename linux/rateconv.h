@@ -49,24 +49,24 @@ template <class Type=float>
 
    RateConverter()
      { Init();
-	   Default(); }
-	 
+       Default(); }
+
    ~RateConverter()
      { Free(); }
 
    void Init(void)
      { FilterShape=0;
-	   InputTap=0; }
+       InputTap=0; }
 
    void Free(void)
      { free(FilterShape); FilterShape=0;
-	   free(InputTap); InputTap=0; }
+       free(InputTap); InputTap=0; }
 
    void Default(void)
      { TapLen=16;
        OverSampling=16;
        UpperFreq=3.0/8;
-	   OutputRate=1.0; }
+       OutputRate=1.0; }
 
    int Preset(void)
      { size_t Idx;
@@ -79,20 +79,20 @@ template <class Type=float>
 
        for(Idx=0; Idx<FilterLen; Idx++)
        { Type Phase=(M_PI*(2*(int)Idx-(int)FilterLen))/FilterLen;
-	     // Type Window=0.50+0.50*cos(Phase);                        // Hanning
-	     // Type Window=0.42+0.50*cos(Phase)+0.08*cos(2*Phase);    // Blackman
-	     Type Window=0.35875+0.48829*cos(Phase)+0.14128*cos(2*Phase)+0.01168*cos(3*Phase);    // Blackman-Harris
-	     Type Filter=1.0;
-		 if(Phase!=0)
-		 { Phase*=(UpperFreq*TapLen); Filter=sin(Phase)/Phase; }
+         // Type Window=0.50+0.50*cos(Phase);                        // Hanning
+         // Type Window=0.42+0.50*cos(Phase)+0.08*cos(2*Phase);    // Blackman
+         Type Window=0.35875+0.48829*cos(Phase)+0.14128*cos(2*Phase)+0.01168*cos(3*Phase);    // Blackman-Harris
+         Type Filter=1.0;
+         if(Phase!=0)
+         { Phase*=(UpperFreq*TapLen); Filter=sin(Phase)/Phase; }
          // printf("%3d: %+9.6f %+9.6f %+9.6f\n", Idx, Window, Filter, Window*Filter);
-		 FilterShape[Idx]=Window*Filter; }
+         FilterShape[Idx]=Window*Filter; }
 
        Reset();
 
-	   return 0;
-	   
-	   Error: Free(); return -1; }
+       return 0;
+
+       Error: Free(); return -1; }
 
    void Reset(void)
      { size_t Idx;
@@ -105,24 +105,24 @@ template <class Type=float>
        OutputTime=0;
        OutputPeriod=OverSampling/OutputRate;
        OutputBefore=0;
-	   OutputAfter=0;
+       OutputAfter=0;
        OutputPtr=0;	}
 
   private:
-  
+
    Type Convolute(size_t Shift=0)
      { Type Sum=0;
        Shift=(OverSampling-1)-Shift;
-	   size_t Idx=InputTapPtr;
-	   for( ; Shift<FilterLen; Shift+=OverSampling)
+       size_t Idx=InputTapPtr;
+       for( ; Shift<FilterLen; Shift+=OverSampling)
        { Sum+=InputTap[Idx]*FilterShape[Shift];
-	     Idx+=1; Idx&=InputWrap; }
-	   return Sum; }
+         Idx+=1; Idx&=InputWrap; }
+       return Sum; }
 
    void NewInput(Type Input)
      { // printf("I:\n");
-	   InputTap[InputTapPtr]=Input;
-	   InputTapPtr+=1; InputTapPtr&=InputWrap; }
+       InputTap[InputTapPtr]=Input;
+       InputTapPtr+=1; InputTapPtr&=InputWrap; }
 
   public:
 
@@ -130,46 +130,46 @@ template <class Type=float>
    template <class InpType, class OutType>
     int Process(InpType *Input, size_t InputLen, OutType *Output)
      { size_t OutputLen=0;
-	   // printf("E: %d %3.1f %d %d\n",OutputPtr, OutputTime, InputLen, OutputLen);
+       // printf("E: %d %3.1f %d %d\n",OutputPtr, OutputTime, InputLen, OutputLen);
        for( ; ; )
-	   { // printf("L: %d %3.1f %d %d\n",OutputPtr, OutputTime, InputLen, OutputLen);
-	     if(OutputPtr)
-	     { size_t Idx=(size_t)floor(OutputTime)+1;
+       { // printf("L: %d %3.1f %d %d\n",OutputPtr, OutputTime, InputLen, OutputLen);
+         if(OutputPtr)
+         { size_t Idx=(size_t)floor(OutputTime)+1;
            if(Idx>=OverSampling)
-		   { if(InputLen==0) break;
-		     NewInput(*Input); Input++; InputLen-=1;
+           { if(InputLen==0) break;
+             NewInput(*Input); Input++; InputLen-=1;
              Idx-=OverSampling;
-			 OutputTime-=(Type)OverSampling; }
+             OutputTime-=(Type)OverSampling; }
            OutputAfter=Convolute(Idx);
-		   Type Weight=Idx-OutputTime;
-		   (*Output)=Weight*OutputBefore+(1.0-Weight)*OutputAfter;
+           Type Weight=Idx-OutputTime;
+           (*Output)=Weight*OutputBefore+(1.0-Weight)*OutputAfter;
            Output++;
-		   OutputLen+=1;
-	       // printf("O: %d %3.1f %d %d %d\n",OutputPtr, OutputTime, InputLen, OutputLen, Idx);
-		   OutputPtr=0; }
-		 else
-	     { size_t Idx=(size_t)floor(OutputTime+OutputPeriod);
+           OutputLen+=1;
+           // printf("O: %d %3.1f %d %d %d\n",OutputPtr, OutputTime, InputLen, OutputLen, Idx);
+           OutputPtr=0; }
+         else
+         { size_t Idx=(size_t)floor(OutputTime+OutputPeriod);
            if(Idx>=OverSampling)
-		   { if(InputLen==0) break;
-		     NewInput(*Input); Input++; InputLen-=1;
+           { if(InputLen==0) break;
+             NewInput(*Input); Input++; InputLen-=1;
              Idx-=OverSampling;
-			 OutputTime-=(Type)OverSampling; }
+             OutputTime-=(Type)OverSampling; }
            OutputBefore=Convolute(Idx);
-		   OutputTime+=OutputPeriod;
-		   OutputPtr=1; }
-	   }
-	   // printf("R: %d %3.1f %d %d\n",OutputPtr, OutputTime, InputLen, OutputLen);
-	   return OutputLen; }
+           OutputTime+=OutputPeriod;
+           OutputPtr=1; }
+       }
+       // printf("R: %d %3.1f %d %d\n",OutputPtr, OutputTime, InputLen, OutputLen);
+       return OutputLen; }
 
    // process samples. store output in a Seq<> with automatic allocation
    template <class InpType, class OutType>
     int Process(InpType Input, size_t InputLen, Seq<OutType> &Output, int Append=1)
      { size_t OutPtr = Append ? Output.Len:0;
-	   size_t MaxOutLen=(size_t)ceil(InputLen*OutputRate+2);
+       size_t MaxOutLen=(size_t)ceil(InputLen*OutputRate+2);
        if(Output.EnsureSpace(OutPtr+MaxOutLen)<0) return -1;
-	   int OutLen=Process(Input, InputLen, Output.Elem+OutPtr);
+       int OutLen=Process(Input, InputLen, Output.Elem+OutPtr);
        Output.Len=OutPtr+OutLen;
-	   return OutLen; }
+       return OutLen; }
 
    template <class InpType, class OutType>
     int Process(Seq<InpType> &Input, Seq<OutType> &Output, int Append=1)

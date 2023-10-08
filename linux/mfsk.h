@@ -111,15 +111,16 @@ template <class FloatType=float>
  class MFSK_Parameters
 { public:
                                              // primary parameters
-        int BitsPerSymbol;                   // [Bits]
-        int Bandwidth;                       // [Hz]
-        int SampleRate;                      // [Hz]
-  FloatType LowerBandEdge;                   // [Hz]
-  FloatType InputSampleRate;                 // [Hz]
-  FloatType OutputSampleRate;                // [Hz]
-        int RxSyncMargin;                    // [MFSK carriers]
-        int RxSyncIntegLen;                  // [FEC Blocks]
-  FloatType RxSyncThreshold;                 // [S/N]
+        int BitsPerSymbol;                   // [Bits] number of bits per MFSK symbol/tone
+        int Bandwidth;                       // [Hz]   total bandwith like 500, 1000 or 2000Hz
+        int SampleRate;                      // [Hz]   audio sample rate: 8000Hz by defaults
+  FloatType LowerBandEdge;                   // [Hz]   
+  FloatType InputSampleRate;                 // [Hz]   true audio card input sample rate, can be different from the ideal 8kHz
+  FloatType OutputSampleRate;                // [Hz]   true audio card output sample rate
+                                             // receiver parameters
+        int RxSyncMargin;                    // [MFSK carriers] lock search frequency margin
+        int RxSyncIntegLen;                  // [FEC Blocks]    averaging size for the lock search
+  FloatType RxSyncThreshold;                 // [S/N]           minimal SNR for a lock and decoding
 
                                              // fixed parameters
   static const int BitsPerCharacter   = 7;   // [Bits]
@@ -133,10 +134,10 @@ template <class FloatType=float>
   static const int DecodeSquareEnergy = 1;
   static const uint64_t ScramblingCode   = 0xE257E6D0291574ECLL;
 
-                                             // secondary parameters
+                                          // secondary parameters
   int Carriers;
-  int SymbolSepar;                        // [Samples]
-  int SymbolLen;                          // [Samples]
+  int SymbolSepar;                        // [Samples]   distance between succesive symbols
+  int SymbolLen;                          // [Samples]   size of the FFT slice produce the symbol shape
   int FirstCarrier;                       // [FFT bins]
 
   MFSK_Parameters()
@@ -194,15 +195,15 @@ template <class FloatType=float>
   -R<Tx>/<Rx>           the true sample rate for Tx and Rx [8000.0/8000.0]\n\
 ";   }
 
-   int ReadOption(char *Option)
+   int ReadOption(const char *Option)
      { if(Option[0]!='-') return 0;
        switch(Option[1])
        { case 'T':
           int Tones;
           if(sscanf(Option+2,"%d",&Tones)==1)
-		  { BitsPerSymbol=Log2(Tones); }
-		  else return -1;
-		  break;
+          { BitsPerSymbol=Log2(Tones); }
+          else return -1;
+          break;
          case 'B':
           int Band; float Edge;
           if(sscanf(Option+2,"%d/%f",&Band,&Edge)==2)
@@ -240,7 +241,7 @@ template <class FloatType=float>
 	     default: return 0; }
        return 1; }
 
-   void Print(void)
+   void Print(bool TxOnly=0) const
    { printf("MFSK_Parameters:\n");
      printf("%d (%4.1f-%4.1f) Hz, %d tones\n",
 	           Bandwidth, LowerBandEdge, LowerBandEdge+Bandwidth, Carriers);
@@ -250,26 +251,27 @@ template <class FloatType=float>
 	           SymbolSepar, SymbolLen, FirstCarrier, SpectraPerSymbol, CarrierSepar);
      printf("%d bits/symbol, %5.3f baud, %d symbols/block, %5.3f sec/block\n",
 	           BitsPerSymbol, BaudRate(), SymbolsPerBlock, BlockPeriod() );
-     printf("Synchronizer: +/-%d carriers = +/-%4.1f Hz,  %d blocks = %3.1f sec\n",
+     if(!TxOnly)
+       printf("Synchronizer: +/-%d carriers = +/-%4.1f Hz,  %d blocks = %3.1f sec\n",
 	           RxSyncMargin, RxSyncMargin*CarrierBandwidth(), RxSyncIntegLen, RxSyncIntegLen*BlockPeriod() );
    }
 
-   FloatType BaudRate(void)
+   FloatType BaudRate(void) const
    { return (FloatType)SampleRate/SymbolSepar; }
 
-   FloatType FFTbinBandwidth(void)
+   FloatType FFTbinBandwidth(void) const
    { return (FloatType)SampleRate/SymbolLen; }
 
-   FloatType CarrierBandwidth(void)
+   FloatType CarrierBandwidth(void) const
    { return (FloatType)SampleRate/SymbolLen*CarrierSepar; }
 
-   FloatType TuneMargin(void)
+   FloatType TuneMargin(void) const
    { return CarrierBandwidth()*RxSyncMargin; }
 
-   FloatType BlockPeriod(void)
+   FloatType BlockPeriod(void) const
    { return (SymbolsPerBlock*SymbolSepar)/(FloatType)SampleRate; }
 
-   FloatType CharactersPerSecond(void)
+   FloatType CharactersPerSecond(void) const
    { return BitsPerSymbol*(FloatType)SampleRate/(SymbolsPerBlock*SymbolSepar); }
 
 } ;
@@ -1926,7 +1928,7 @@ template <class Type=float>
      { State|=State_StopReq; }
 
    // check if the transmission is still running (= not yet complete)
-   int Running(void)
+   int Running(void) const
      { return State&State_Running; }
 
    // put the character into the transmitter input queue
