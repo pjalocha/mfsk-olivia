@@ -43,7 +43,7 @@ template <class Type, class PtrType>
      { Len=NewLen; return Preset(); }
 
    int Preset(void)
-	 { if(ReallocArray(&Data,Len)<0) return -1;
+     { if(ReallocArray(&Data,Len)<0) return -1;
        Reset(); return 0; }
 
    // increment the pointer (with wrapping around)

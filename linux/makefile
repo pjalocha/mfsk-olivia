@@ -21,6 +21,9 @@ mfsk_test:	mfsk_test.cc mfsk.h struc.h fht.h fft.h buffer.h cmpx.h gray.h noise.
 mfsk_tx:	mfsk_tx.cc mfsk.h sound.h rateconv.h lowpass3.h struc.h fht.h fft.h buffer.h cmpx.h gray.h noise.h stdinr.h
 		g++ -o $@ $(FLAGS) mfsk_tx.cc $(LIBS)
 
+mfsk_encode:	mfsk_encode.cc mfsk.h rateconv.h lowpass3.h struc.h fht.h fft.h buffer.h cmpx.h gray.h noise.h stdinr.h
+		g++ -o $@ $(FLAGS) mfsk_encode.cc $(LIBS)
+
 mfsk_rx:	mfsk_rx.cc term.h mfsk.h sound.h struc.h fht.h fft.h buffer.h cmpx.h gray.h noise.h
 		g++ -o $@ $(FLAGS) mfsk_rx.cc $(LIBS)
 

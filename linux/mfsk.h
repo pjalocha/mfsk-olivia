@@ -111,21 +111,21 @@ template <class FloatType=float>
  class MFSK_Parameters
 { public:
                                              // primary parameters
-  int BitsPerSymbol;                      // [Bits]
-  int Bandwidth;                          // [Hz]
-  int SampleRate;                         // [Hz]
+        int BitsPerSymbol;                   // [Bits]
+        int Bandwidth;                       // [Hz]
+        int SampleRate;                      // [Hz]
   FloatType LowerBandEdge;                   // [Hz]
   FloatType InputSampleRate;                 // [Hz]
   FloatType OutputSampleRate;                // [Hz]
-  int RxSyncMargin;                       // [MFSK carriers]
-  int RxSyncIntegLen;                     // [FEC Blocks]
+        int RxSyncMargin;                    // [MFSK carriers]
+        int RxSyncIntegLen;                  // [FEC Blocks]
   FloatType RxSyncThreshold;                 // [S/N]
 
                                              // fixed parameters
-  static const int BitsPerCharacter   = 7; // [Bits]
+  static const int BitsPerCharacter   = 7;   // [Bits]
   static const int SymbolsPerBlock    = 1<<(BitsPerCharacter-1);
-  static const int CarrierSepar       = 4; // [FFT bins]
-  static const int SpectraPerSymbol   = 4; // [Spectral (FFT) slices]
+  static const int CarrierSepar       = 4;   // [FFT bins]
+  static const int SpectraPerSymbol   = 4;   // [Spectral (FFT) slices]
   static const int SpectraPerBlock    = SpectraPerSymbol*SymbolsPerBlock;
   static const int UseGrayCode        = 1;
   static const int PhaseDiffer        = 1;
@@ -145,19 +145,19 @@ template <class FloatType=float>
   void Default(void)
     { BitsPerSymbol       = 5;
       SampleRate          = 8000;
-	  Bandwidth           = 1000;
+      Bandwidth           = 1000;
       LowerBandEdge       = SampleRate/16;
       InputSampleRate     = SampleRate;
       OutputSampleRate    = SampleRate;
-	  RxSyncIntegLen      = 8;
-	  RxSyncMargin        = 4;
-	  RxSyncThreshold     = 3.0; }
+      RxSyncIntegLen      = 8;
+      RxSyncMargin        = 4;
+      RxSyncThreshold     = 3.0; }
 
   int Preset(void)
-    { 
-	  if(BitsPerSymbol>8) BitsPerSymbol=8;
-	  else if(BitsPerSymbol<1) BitsPerSymbol=1;
-	  Carriers=Exp2(BitsPerSymbol);
+    {
+      if(BitsPerSymbol>8) BitsPerSymbol=8;
+      else if(BitsPerSymbol<1) BitsPerSymbol=1;
+      Carriers=Exp2(BitsPerSymbol);
 
       int MinBandwidth=SampleRate/64;
       int MaxBandwidth=SampleRate/4;
@@ -168,16 +168,22 @@ template <class FloatType=float>
       SymbolSepar=(SampleRate/Bandwidth)*Carriers;
       SymbolLen=SymbolSepar*CarrierSepar;
 
+      // printf("Preset() SampleRate:%d, CarrierSepar:%d, SymbolLen:%d, FirstCarrier:%d, LowerBandEdge:%3.1f Hz\n",
+      //                   SampleRate, CarrierSepar, SymbolLen, FirstCarrier, LowerBandEdge);
+
       FirstCarrier=(int)floor((LowerBandEdge/SampleRate)*SymbolLen+0.5)+(CarrierSepar/2);
       if((FirstCarrier+Carriers*CarrierSepar)>=(SymbolLen/2))
-	    FirstCarrier=(SymbolLen/2)-Carriers*CarrierSepar;
-      LowerBandEdge=(FloatType)(FirstCarrier-CarrierSepar/2)/SymbolLen;
+        FirstCarrier=(SymbolLen/2)-Carriers*CarrierSepar;
+      LowerBandEdge=(FloatType)(FirstCarrier-CarrierSepar/2)*SampleRate/SymbolLen;
 
       if(RxSyncMargin>(FirstCarrier/CarrierSepar)) RxSyncMargin=(FirstCarrier/CarrierSepar);
 
-	  return 0; }
+      // printf("Preset() SampleRate:%d, CarrierSepar:%d, SymbolLen:%d, FirstCarrier:%d, LowerBandEdge:%3.1f Hz\n",
+      //                   SampleRate, CarrierSepar, SymbolLen, FirstCarrier, LowerBandEdge);
 
-   char *OptionHelp(void)
+      return 0; }
+
+   const char *OptionHelp(void)
      { return "\
   -T<tones>             number of tones: 4, 8, 16, [32], 64, 128, 256\n\
   -B<bandwidth>/<edge>  bandwidth: 125, 250, 500, [1000], 2000\n\
@@ -197,32 +203,32 @@ template <class FloatType=float>
 		  { BitsPerSymbol=Log2(Tones); }
 		  else return -1;
 		  break;
-	     case 'B':
+         case 'B':
           int Band; float Edge;
           if(sscanf(Option+2,"%d/%f",&Band,&Edge)==2)
-		  { Bandwidth=Band; LowerBandEdge=Edge; }
+          { Bandwidth=Band; LowerBandEdge=Edge; }
           else if(sscanf(Option+2,"%d",&Band)==1)
-		  { Bandwidth=Band; }
-		  else return -1;
-		  break;
-		 case 'M':
+          { Bandwidth=Band; }
+          else return -1;
+          break;
+         case 'M':
           int Margin;
           if(sscanf(Option+2,"%d",&Margin)==1)
-		  { RxSyncMargin=Margin; }
-		  else return -1;
-		  break;
-		 case 'I':
+          { RxSyncMargin=Margin; }
+          else return -1;
+          break;
+         case 'I':
           int IntegLen;
           if(sscanf(Option+2,"%d",&IntegLen)==1)
-		  { RxSyncIntegLen=IntegLen; }
-		  else return -1;
-		  break;
-		 case 'S':
+          { RxSyncIntegLen=IntegLen; }
+          else return -1;
+          break;
+         case 'S':
           float Threshold;
           if(sscanf(Option+2,"%f",&Threshold)==1)
-		  { RxSyncThreshold=Threshold; }
-		  else return -1;
-		  break;
+          { RxSyncThreshold=Threshold; }
+          else return -1;
+          break;
          case 'R':
           float SampleRate_Out,SampleRate_Inp;
           if(sscanf(Option+2,"%f/%f",&SampleRate_Out,&SampleRate_Inp)==2)
@@ -1834,10 +1840,10 @@ template <class Type=float>
    int State;
 
    FIFO<uint8_t, int> Input;     // buffer(queue) for the characters to be encoded
-   uint8_t InputBlock[8];   // FEC code block buffer
+   uint8_t InputBlock[8];        // FEC code block buffer
    FIFO<uint8_t, int> Monitor;   // buffer for monitoring the characters being sent
 
-   MFSK_Encoder Encoder;    // FEC encoder
+   MFSK_Encoder Encoder;         // FEC encoder
    int SymbolPtr;
 
    MFSK_Modulator<Type> Modulator; // MFSK modulator
@@ -1856,7 +1862,7 @@ template <class Type=float>
 
    void Init(void)
      { ModulatorOutput=0;
-	   ConverterOutput=0; }
+       ConverterOutput=0; }
 
    void Free(void)
      { Input.Free();
@@ -1864,13 +1870,12 @@ template <class Type=float>
        Encoder.Free();
        Modulator.Free();
        free(ModulatorOutput); ModulatorOutput=0;
-	   RateConverter.Free();
+       RateConverter.Free();
        free(ConverterOutput); ConverterOutput=0; }
 
    // preset internal arrays according to primary paramaters
    int Preset(MFSK_Parameters<Type> *NewParameters)
      {
-
        Parameters=NewParameters;
 
        BitsPerSymbol=Parameters->BitsPerSymbol;
@@ -1878,9 +1883,9 @@ template <class Type=float>
 
        // preset the input character buffer
        Input.Len=1024;
-	   if(Input.Preset()<0) goto Error;
+       if(Input.Preset()<0) goto Error;
        Monitor.Len=256;
-	   if(Monitor.Preset()<0) goto Error;
+       if(Monitor.Preset()<0) goto Error;
 
        // preset the encoder
        Encoder.BitsPerSymbol=BitsPerSymbol;
@@ -1893,7 +1898,7 @@ template <class Type=float>
 
        // preset the rate converter
        RateConverter.OutputRate=Parameters->OutputSampleRate/Parameters->SampleRate;
-	   if(RateConverter.Preset()<0) goto Error;
+       if(RateConverter.Preset()<0) goto Error;
 
        MaxOutputLen=(int)ceil(Parameters->SymbolSepar*Parameters->OutputSampleRate/Parameters->SampleRate+2);
        if(ReallocArray(&ConverterOutput,MaxOutputLen)<0) goto Error;
@@ -1906,10 +1911,10 @@ template <class Type=float>
 
    void Reset(void)
      { Input.Reset();
-	   Monitor.Reset();
+       Monitor.Reset();
        SymbolPtr=0;
        State=0;
-	   RateConverter.Reset(); }
+       RateConverter.Reset(); }
 
    // start the transmission
    void Start(void)
@@ -1935,34 +1940,34 @@ template <class Type=float>
    // get out the transmitter output (audio)
    int Output(Type *&OutputPtr)
      { if(SymbolPtr==0)                            // when at the block boundary
-	   { if((State&State_StopReq)&&Input.Empty()) // if the user requested to stop and no more characters
+       { if((State&State_StopReq)&&Input.Empty()) // if the user requested to stop and no more characters
          { State=0; }                              // then simply stop
          else if(State&State_Running)             // otherwise when state is "running" then keep going
-	     { int Idx;                             // form a new block
-	       for(Idx=0; Idx<BitsPerSymbol; Idx++)   // loop over characters in a block
-		   { uint8_t Char;
-		     if(Input.Read(Char)<=0) break;       // get character from the input FIFO
+         { int Idx;                             // form a new block
+           for(Idx=0; Idx<BitsPerSymbol; Idx++)   // loop over characters in a block
+           { uint8_t Char;
+             if(Input.Read(Char)<=0) break;       // get character from the input FIFO
              InputBlock[Idx]=Char;                 // put it into the block
-			 Monitor.Write(Char); }                // put this character into the monitor FIFO
-	       for(     ; Idx<BitsPerSymbol; Idx++)    // fill the unused part of the block
+             Monitor.Write(Char); }                // put this character into the monitor FIFO
+           for(     ; Idx<BitsPerSymbol; Idx++)    // fill the unused part of the block
              InputBlock[Idx]=0;
            Encoder.EncodeBlock(InputBlock);         // encode the new block
-		 }
-	   }
+         }
+       }
        if(State&State_Running)                      // if state is "running" then
-	   { Modulator.Send(Encoder.OutputBlock[SymbolPtr]); // send out the next symbol of encoded block through the modulator
+       { Modulator.Send(Encoder.OutputBlock[SymbolPtr]); // send out the next symbol of encoded block through the modulator
          SymbolPtr+=1; if(SymbolPtr>=SymbolsPerBlock) SymbolPtr=0; }
        int ModLen=Modulator.Output(ModulatorOutput);     // get the modulator output
-	   int ConvLen=RateConverter.Process(ModulatorOutput,ModLen,ConverterOutput); // correct the sampling rate
+       int ConvLen=RateConverter.Process(ModulatorOutput,ModLen,ConverterOutput); // correct the sampling rate
        if(ConvLen<0) return ConvLen;
        OutputPtr=ConverterOutput;
-	   return ConvLen; }
+       return ConvLen; }
 
    int Output(int16_t *Buffer)
      { Type *OutputPtr;
-	   int OutputLen=Output(OutputPtr);
+       int OutputLen=Output(OutputPtr);
        ConvertToS16(ConverterOutput,Buffer,OutputLen);     // convert to 16-bit signed format (for the soundcard)
-	   return OutputLen; }
+       return OutputLen; }
 
 } ;
 
