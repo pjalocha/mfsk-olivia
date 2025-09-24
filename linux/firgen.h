@@ -163,8 +163,8 @@ class FirGen // symetric, real-valued FIR filter generator
        RespQ+=TimeShape[t]*WaveShapeQ[t2]; }
      return RespI*RespI+RespQ*RespQ; }
 
-   int WriteShapeTable(char *Table="double Shape", double Scale=1.0,
-                       char *Form=" %+12.9f", FILE *File=stdout)
+   int WriteShapeTable(const char *Table="double Shape", double Scale=1.0,
+                       const char *Form=" %+12.9f", FILE *File=stdout)
    { int t;
      if(fprintf(File,"\n%s[%d] = \n{ ",Table,TimeShape.Len)==EOF) return -1;
      for(t=0; t<(int)TimeShape.Len-1; t++)
@@ -177,7 +177,7 @@ class FirGen // symetric, real-valued FIR filter generator
      if(fprintf(File,"\n")==EOF) return -1;
      return 0; }
 
-   void PrintFreqShape(char *Form=" %+12.9f",FILE *File=stdout)
+   void PrintFreqShape(const char *Form=" %+12.9f",FILE *File=stdout)
    { size_t F,Fmax;
      for(Fmax=FreqShape.Len-1; Fmax>0; Fmax--) if(FreqShape[Fmax]!=0.0) break;
      fprintf(File,"FreqShape: ");

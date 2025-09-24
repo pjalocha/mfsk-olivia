@@ -102,9 +102,9 @@ template <class Type>
 // =====================================================================
 
 // the symbol shape described in frequency domain
-static const double MFSK_SymbolFreqShape[] =
-  { +1.0000000000, +2.1373197349, +1.1207588117, -0.0165609232 } ;
-static const int MFSK_SymbolFreqShapeLen=sizeof(MFSK_SymbolFreqShape)/sizeof(double);
+static const double MFSK_SymbolFreqShape[] = { +1.0000000000, +2.1373197349, +1.1207588117, -0.0165609232 } ;
+
+static const int MFSK_SymbolFreqShapeLen = sizeof(MFSK_SymbolFreqShape)/sizeof(double);
 
 // the basic parameters
 template <class FloatType=float>
@@ -184,15 +184,15 @@ template <class FloatType=float>
 
       return 0; }
 
-   const char *OptionHelp(void)
+   const char *OptionHelp(void) const
      { return "\
   -T<tones>             number of tones: 4, 8, 16, [32], 64, 128, 256\n\
   -B<bandwidth>/<edge>  bandwidth: 125, 250, 500, [1000], 2000\n\
                         and lower audio band edge [500] [Hz]\n\
+  -R<Tx>/<Rx>           the true sample rate for Tx and Rx [8000.0/8000.0]\n\
   -S<threshold>         S/N threshold [3.0]\n\
   -M<margin>            frequency search margin [4]\n\
   -I<period>            synchr. integration period [8]\n\
-  -R<Tx>/<Rx>           the true sample rate for Tx and Rx [8000.0/8000.0]\n\
 ";   }
 
    int ReadOption(const char *Option)
